@@ -6,6 +6,7 @@ export const GREEN_BEAN = require("../assets/greenBean.png");
 export const YELLOW_BEAN = require("../assets/yellowBean.png");
 export const RED_BEAN = require("../assets/redBean.png");
 export const DOUGHNUT_TILE = require("../assets/doughnutTile.png");
+export const LOLLIPOP_TILE = require("../assets/lollipop.png");
 
 export const BEANS = [PINK_BEAN, PURPLE_BEAN, BLUE_BEAN, ORANGE_BEAN, GREEN_BEAN, YELLOW_BEAN, RED_BEAN]
 
@@ -57,6 +58,11 @@ export const ORANGE_BEAN_OBJ = {
 export const uniqueTiles = {
     DOUGHNUT_TILE: {
         image: DOUGHNUT_TILE,
+        color: 0,
+        isUnique: true
+    },
+    LOLLIPOP_TILE: {
+        image: LOLLIPOP_TILE,
         color: 0,
         isUnique: true
     }

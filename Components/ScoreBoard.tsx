@@ -6,13 +6,15 @@ import { currentProgress, goalCalculator } from '../Utility/scoreLogic';
 import { MainText } from '../Core/MainText';
 import { usePlaySound } from '../hooks/usePlaySound';
 import { soundEmitter } from '../functions/soundEmitter';
+import { Timer } from './Timer';
+import { LosingScreen } from './LosingScreen';
 
 
 
 const ScoreBoard = () => {
     const mainContext = useContext(MainContext)
     const [passedLevelScore, setPassedLevelScore] = useState(0)
-
+    const [losingScreen, setLosingScreen] = useState(false)
     usePlaySound(mainContext.currentScore, soundEmitter(mainContext.currentSound))
     usePlaySound(mainContext.currentScore - passedLevelScore >= mainContext.currentGoal, require('../assets/sounds/levelUp.mp3'))
 
@@ -22,6 +24,12 @@ const ScoreBoard = () => {
             setPassedLevelScore(mainContext.currentScore)
         }
     }, [mainContext.currentScore])
+
+    useEffect(() => {
+        if (mainContext.currentScore === 0) {
+            setPassedLevelScore(0)
+        }
+    }, [mainContext.resetGame])
 
     return (
         <View style={styles.container}>
@@ -34,15 +42,19 @@ const ScoreBoard = () => {
                         })
                     }]
                 }]} source={require('../assets/candyJar.png')} />
-                <View>
-                    <MainText style={{ fontSize: 20 }}>Current Score</MainText>
-                    <MainText style={{ fontSize: 15 }}>Total score: {mainContext.currentScore}</MainText>
-                    <Progress.Bar color={'pink'} progress={currentProgress(mainContext.currentScore, mainContext.currentGoal, passedLevelScore)} width={200} />
+                <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                    <View>
+                        <MainText style={{ fontSize: 20 }}>Current Score</MainText>
+                        <MainText style={{ fontSize: 15 }}>Total score: {mainContext.currentScore}</MainText>
+                        <Progress.Bar color={'pink'} progress={currentProgress(mainContext.currentScore, mainContext.currentGoal, passedLevelScore)} width={200} />
+                    </View>
+                    <Timer returnLoss={(val: boolean) => setLosingScreen(val)} />
                 </View>
             </View>
             <View>
                 <MainText style={{ fontSize: 22, textAlign: 'center' }}>Level {mainContext.currentLevel}</MainText>
             </View>
+            {losingScreen && <LosingScreen />}
         </View>
     )
 }
@@ -52,7 +64,7 @@ export default ScoreBoard
 
 const styles = StyleSheet.create({
     container: {
-        paddingTop: '15%'
+        paddingTop: '15%',
     },
     jarImage: {
         width: 120,

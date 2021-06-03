@@ -14,7 +14,9 @@ interface MainContextValue {
     currentGoal: number;
     currentLevel: number;
     levelUp: Function;
-    currentSound: string
+    currentSound: string;
+    resetGame: Function;
+    resetClock: boolean;
 }
 
 interface MainProviderProps {
@@ -30,7 +32,9 @@ const initialMainState: MainContextValue = {
     currentGoal: 10,
     currentLevel: 1,
     levelUp: () => { },
-    currentSound: ''
+    currentSound: '',
+    resetGame: () => { },
+    resetClock: false
 };
 
 const MainContext = createContext<MainContextValue>({
@@ -43,12 +47,17 @@ const MainContext = createContext<MainContextValue>({
     currentGoal: 10,
     currentLevel: 1,
     levelUp: () => { },
-    currentSound: ''
+    currentSound: '',
+    resetGame: () => { },
+    resetClock: false
 });
 
 
 type LevelUp = {
     type: 'LEVEL_UP'
+}
+type ResetGame = {
+    type: 'RESET_GAME'
 }
 
 type TriggerJar = {
@@ -63,7 +72,7 @@ type ChangeScore = {
     }
 };
 
-type Action = TriggerJar | ChangeScore | LevelUp
+type Action = TriggerJar | ChangeScore | LevelUp | ResetGame
 
 
 
@@ -75,6 +84,19 @@ const reducer = (state: MainContextValue, action: Action) => {
         case 'TRIGGER_JAR': {
             return {
                 ...state,
+            };
+        }
+        case 'RESET_GAME': {
+            const currentLevel = 1
+            const currentGoal = 10
+            const currentScore = 0
+            const resetClock = !state.resetClock
+            return {
+                ...state,
+                currentLevel,
+                currentGoal,
+                currentScore,
+                resetClock
             };
         }
 
@@ -126,6 +148,8 @@ export const MainProvider: FC<MainProviderProps> = ({ children }) => {
 
     const levelUp = () => dispatch({ type: 'LEVEL_UP' });
 
+    const resetGame = () => dispatch({ type: 'RESET_GAME' })
+
 
     return (
         <MainContext.Provider
@@ -133,7 +157,8 @@ export const MainProvider: FC<MainProviderProps> = ({ children }) => {
                 ...state,
                 triggerJar,
                 changeScore,
-                levelUp
+                levelUp,
+                resetGame
             }}
         >
             {children}

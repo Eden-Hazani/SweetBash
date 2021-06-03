@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { LoadingScreen } from './Components/LoadingScreen';
-import { SwappableGrid } from './Components/SwappableGrid';
+import { AppNavigation } from './Navigation/AppNavigation';
 import { GameScreen } from './Screens/GameScreen';
 import { MainProvider } from './shared/context'
 import startUp from './Utility/startupFunctions';
@@ -18,9 +18,9 @@ export default function App() {
   }
   return (
     <SafeAreaView style={styles.container}>
-      {loading ? <LoadingScreen /> :
+      {loading ? <LoadingScreen scale={1} /> :
         <MainProvider >
-          <GameScreen />
+          <AppNavigation />
         </MainProvider>
       }
     </SafeAreaView>

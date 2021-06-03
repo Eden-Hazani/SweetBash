@@ -103,14 +103,25 @@ export const getAllMatches = (tileData: TileData[][]) => {
     return [...rowMatches, ...colMatches]
 }
 
+const checkForTileExistence = (tilePositionX: number, tilePositionY: number) => {
+    if (tilePositionX >= 5 || tilePositionY >= 5) {
+        return false
+    } else if (tilePositionY < 0 || tilePositionX < 0) {
+        return false
+    }
+    return true
+}
+
 export const markAsMatch = (matches: any[], tileData: TileData[][]) => {
     const matchedObj: any = {};
     matches.forEach((match) => {
         match.forEach((e: any, index: number) => {
-            let i = e[0]
-            let j = e[1]
-            tileData[i][j].markedAsMatch = true
-            matchedObj[`${index}`] = tileData[i][j]
+            if (checkForTileExistence(e[0], e[1])) {
+                let i = e[0]
+                let j = e[1]
+                tileData[i][j].markedAsMatch = true
+                matchedObj[`${index}`] = tileData[i][j]
+            }
         })
     })
     return matchedObj

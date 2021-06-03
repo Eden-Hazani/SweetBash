@@ -1,5 +1,5 @@
 import React, { Component, useContext, useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Animated, Dimensions, PanResponderGestureState, PanResponder, Vibration } from 'react-native';
+import { View, StyleSheet, Animated, Dimensions, PanResponderGestureState, PanResponder, Vibration, Image } from 'react-native';
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { animateVibration } from '../Animations/Animations';
 import { condenseColumns, getAllMatches, markAsMatch, sleep } from '../Lib/GridApi';
@@ -8,10 +8,10 @@ import MainContext from '../shared/context';
 import { constants } from '../Utility/constants';
 import { initializeDataSource, renderTiles, recolorMatches, findSwipeDirection, validateTileUniqueness } from '../Utility/logic';
 import { swipeDirections } from '../Utility/swipeDirections';
-import { doughNutTileFunctionality } from '../functions/uniqueTileFunctionality'
+import { getCurrentTileFunctionality } from '../functions/uniqueTileFunctionality'
 
 
-export function SwappableGrid() {
+const SwappableGrid = () => {
     const [tileDataSource, setTileDataSource] = useState(initializeDataSource())
     const gridOrigin = useRef([0, 0])
     const mainContext = useContext(MainContext)
@@ -120,7 +120,8 @@ export function SwappableGrid() {
         const selectedTile = tileDataSource[i][j];
         if (selectedTile.markedAsMatch) return;
         if (validateTileUniqueness(selectedTile)) {
-            const { matches, soundName } = doughNutTileFunctionality(i, j);
+            const { matches, soundName } = getCurrentTileFunctionality(selectedTile.isUnique, i, j);
+            console.log(matches, soundName)
             processMatches(matches, soundName)
         }
     }
@@ -196,12 +197,17 @@ export function SwappableGrid() {
             {...panResponder.panHandlers}
             onLayout={(e) => onLayout(e)}
             style={styles.gestureContainer}>
-
             {renderTiles(tileDataSource)}
         </View>
     )
 }
 
+SwappableGrid.sharedElements = (route: any, otherRoute: any, showing: any) => {
+    const { item } = route.params;
+    return [`test`];;
+}
+
+export default SwappableGrid
 
 const styles = StyleSheet.create({
 

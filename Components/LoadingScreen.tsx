@@ -2,9 +2,13 @@ import React, { Component } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { WaveJar } from './WaveJar';
 
-export function LoadingScreen() {
+interface Props {
+    scale: number
+}
+
+export function LoadingScreen({ scale }: Props) {
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { transform: [{ scale }] }]}>
             <WaveJar />
         </View>
     )
