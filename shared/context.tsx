@@ -2,7 +2,7 @@ import React, { createContext, ReactNode, FC, useReducer } from "react";
 import { Animated } from "react-native";
 import { sleep } from "../Lib/GridApi";
 import { goalCalculator } from "../Utility/scoreLogic";
-import { animateCandyJar } from "./contextFunctions";
+import { animateCandyJar, minuetsToString, stringToMinuets } from "./contextFunctions";
 
 
 interface MainContextValue {
@@ -16,7 +16,9 @@ interface MainContextValue {
     levelUp: Function;
     currentSound: string;
     resetGame: Function;
-    resetClock: boolean;
+    currentFullTime: string;
+    currentTimer: string;
+    deductTime: (deductibleTime: string) => void;
 }
 
 interface MainProviderProps {
@@ -34,7 +36,9 @@ const initialMainState: MainContextValue = {
     levelUp: () => { },
     currentSound: '',
     resetGame: () => { },
-    resetClock: false
+    currentFullTime: '01:00',
+    deductTime: () => { },
+    currentTimer: '01:00'
 };
 
 const MainContext = createContext<MainContextValue>({
@@ -49,9 +53,18 @@ const MainContext = createContext<MainContextValue>({
     levelUp: () => { },
     currentSound: '',
     resetGame: () => { },
-    resetClock: false
+    currentFullTime: '01:00',
+    deductTime: () => { },
+    currentTimer: '01:00'
 });
 
+
+type DeductTime = {
+    type: 'DEDUCT_TIME';
+    payload: {
+        time: string
+    }
+}
 
 type LevelUp = {
     type: 'LEVEL_UP'
@@ -72,7 +85,7 @@ type ChangeScore = {
     }
 };
 
-type Action = TriggerJar | ChangeScore | LevelUp | ResetGame
+type Action = TriggerJar | ChangeScore | LevelUp | ResetGame | DeductTime
 
 
 
@@ -80,6 +93,21 @@ type Action = TriggerJar | ChangeScore | LevelUp | ResetGame
 
 const reducer = (state: MainContextValue, action: Action) => {
     switch (action.type) {
+
+        case 'DEDUCT_TIME': {
+            let currentTimer = '';
+            let time = stringToMinuets(minuetsToString(state.currentTimer) - minuetsToString(action.payload.time));
+            console.log(parseInt(time.split(':')[0]), parseInt(time.split(':')[1]))
+            if (parseInt(time.split(':')[0]) <= 0 && parseInt(time.split(':')[1]) <= 0) {
+                currentTimer = '00:00'
+            } else {
+                currentTimer = `${('0' + time.split(':')[0]).slice(-2)}:${('0' + time.split(':')[1]).slice(-2)}`;
+            }
+            return {
+                ...state,
+                currentTimer
+            }
+        }
 
         case 'TRIGGER_JAR': {
             return {
@@ -90,13 +118,15 @@ const reducer = (state: MainContextValue, action: Action) => {
             const currentLevel = 1
             const currentGoal = 10
             const currentScore = 0
-            const resetClock = !state.resetClock
+            const currentTimer = '01:00'
+            const currentFullTime = '01:00'
             return {
                 ...state,
                 currentLevel,
                 currentGoal,
                 currentScore,
-                resetClock
+                currentTimer,
+                currentFullTime
             };
         }
 
@@ -113,11 +143,15 @@ const reducer = (state: MainContextValue, action: Action) => {
         case 'LEVEL_UP': {
             const { updatedGoal, updatedLevel } = goalCalculator(state.currentLevel, state.currentGoal);
             let currentLevel = updatedLevel;
-            let currentGoal = updatedGoal
+            let currentGoal = updatedGoal;
+            const currentTimer = `${('0' + currentLevel).slice(-2)}:00`
+            const currentFullTime = `${('0' + currentLevel).slice(-2)}:00`
             return {
                 ...state,
                 currentLevel,
-                currentGoal
+                currentGoal,
+                currentTimer,
+                currentFullTime
             }
         }
 
@@ -150,6 +184,7 @@ export const MainProvider: FC<MainProviderProps> = ({ children }) => {
 
     const resetGame = () => dispatch({ type: 'RESET_GAME' })
 
+    const deductTime = (time: string) => dispatch({ type: 'DEDUCT_TIME', payload: { time } })
 
     return (
         <MainContext.Provider
@@ -158,7 +193,8 @@ export const MainProvider: FC<MainProviderProps> = ({ children }) => {
                 triggerJar,
                 changeScore,
                 levelUp,
-                resetGame
+                resetGame,
+                deductTime
             }}
         >
             {children}

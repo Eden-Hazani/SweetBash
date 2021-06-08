@@ -1,10 +1,14 @@
 export const getCurrentTileFunctionality = (tileName: string, tilePositionX: number, tilePositionY: number) => {
     if (tileName === 'DOUGHNUT_TILE') return doughNutTileFunctionality(tilePositionX, tilePositionY);
     if (tileName === 'LOLLIPOP_TILE') return LollipopFunctionality(tilePositionX, tilePositionY);
+    if (tileName === 'SMELLY_CHEESE_TILE') return smellyCheeseTileFunctionality(tilePositionX, tilePositionY);
     return { matches: [], soundName: 'REGULAR_SOUND' }
 }
 
-
+const smellyCheeseTileFunctionality = (tilePositionX: number, tilePositionY: number) => {
+    const matches: number[][][] = [[[tilePositionX, tilePositionY]]]
+    return { matches, soundName: 'SMELLY_CHEESE', deductTime: '00:15' }
+}
 
 
 const doughNutTileFunctionality = (tilePositionX: number, tilePositionY: number) => {

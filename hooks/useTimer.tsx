@@ -1,32 +1,58 @@
 import { useContext, useEffect, useState } from "react";
 import MainContext from "../shared/context";
+import useDidUpdate from "./useDidUpdate";
 
 
-export const useTimer = (min: number, potentialRefresh: any) => {
+export const useTimer = (currentFullTime: string, pause: boolean, isMounted: boolean) => {
+    const mainContext = useContext(MainContext)
     const [currentTimer, setCurrentTimer] = useState<NodeJS.Timeout | null>(null)
-    const [currentTime, setCurrentTime] = useState<string>('')
-    useEffect(() => {
-        let sec: number = 0;
-        currentTimer && clearInterval(currentTimer)
-        setCurrentTimer(startTimer(sec))
-    }, [min, potentialRefresh])
 
-    const startTimer = (sec: number) => {
+    useEffect(() => {
+        if (pause) {
+            currentTimer && clearInterval(currentTimer)
+            return
+        }
+        currentTimer && clearInterval(currentTimer)
+        setCurrentTimer(startTimer())
+    }, [currentFullTime, pause])
+
+    const restartClock = () => {
+        if (isMounted) {
+            currentTimer && clearInterval(currentTimer)
+            setCurrentTimer(startTimer())
+        } else {
+            currentTimer && clearInterval(currentTimer)
+        }
+    }
+
+    useDidUpdate(restartClock, [mainContext.currentTimer])
+
+
+    useEffect(() => {
+        return (() => {
+            currentTimer && clearInterval(currentTimer)
+        })
+    }, [])
+
+
+
+    const startTimer = () => {
         const currentTimer = setInterval(() => {
+            let min = parseInt(mainContext.currentTimer.split(':')[0], 10)
+            let sec = parseInt(mainContext.currentTimer.split(':')[1], 10)
             sec--;
             if (sec < 0) sec = 0
-            setCurrentTime(`${('0' + min).slice(-2)}:${('0' + sec).slice(-2)}`)
             if (min <= 0 && sec <= 0) {
-                setCurrentTime(`00:00`)
                 currentTimer && clearInterval(currentTimer)
+                return;
             }
             if (sec === 0) {
                 min--;
                 sec = 60;
             }
+            mainContext.deductTime('00:01')
         }, 1000);
         return currentTimer
     }
 
-    return currentTime
 }

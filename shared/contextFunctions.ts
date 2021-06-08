@@ -60,3 +60,12 @@ export const animateCandyJar = (jarLocation: Animated.ValueXY, jarRotation: Anim
         ])
     ]).start()
 }
+
+export const minuetsToString = (time: string) => {
+    let string = time.split(":");
+    return Number(string[0]) * 60 + Number(string[1]);
+}
+
+export const stringToMinuets = (time: number) => {
+    return Math.trunc(time / 60) + ':' + ('00' + time % 60).slice(-2);
+}

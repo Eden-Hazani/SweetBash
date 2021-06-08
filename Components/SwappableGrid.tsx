@@ -120,8 +120,8 @@ const SwappableGrid = () => {
         const selectedTile = tileDataSource[i][j];
         if (selectedTile.markedAsMatch) return;
         if (validateTileUniqueness(selectedTile)) {
-            const { matches, soundName } = getCurrentTileFunctionality(selectedTile.isUnique, i, j);
-            console.log(matches, soundName)
+            const { matches, soundName, deductTime }: any = getCurrentTileFunctionality(selectedTile.isUnique, i, j);
+            deductTime && mainContext.deductTime(deductTime)
             processMatches(matches, soundName)
         }
     }
@@ -202,10 +202,6 @@ const SwappableGrid = () => {
     )
 }
 
-SwappableGrid.sharedElements = (route: any, otherRoute: any, showing: any) => {
-    const { item } = route.params;
-    return [`test`];;
-}
 
 export default SwappableGrid
 
