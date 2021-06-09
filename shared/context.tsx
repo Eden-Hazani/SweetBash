@@ -97,7 +97,6 @@ const reducer = (state: MainContextValue, action: Action) => {
         case 'DEDUCT_TIME': {
             let currentTimer = '';
             let time = stringToMinuets(minuetsToString(state.currentTimer) - minuetsToString(action.payload.time));
-            console.log(parseInt(time.split(':')[0]), parseInt(time.split(':')[1]))
             if (parseInt(time.split(':')[0]) <= 0 && parseInt(time.split(':')[1]) <= 0) {
                 currentTimer = '00:00'
             } else {

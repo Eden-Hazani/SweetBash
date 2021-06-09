@@ -96,4 +96,13 @@ const validateImgObjectUniqueness = (imageObj: ImgObj) => {
   return true
 }
 
-export { initializeDataSource, renderTiles, recolorMatches, findSwipeDirection, validateTileUniqueness, validateImgObjectUniqueness }
+const validateMatchInProgress = (tiles: TileData[][]) => {
+  for (let i = 0; i < 5; i++) {
+    for (let j = 0; j < 5; j++) {
+      if (tiles[i][j].markedAsMatch) return false
+    }
+  }
+  return true
+}
+
+export { validateMatchInProgress, initializeDataSource, renderTiles, recolorMatches, findSwipeDirection, validateTileUniqueness, validateImgObjectUniqueness }

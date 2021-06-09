@@ -1,12 +1,12 @@
 import React, { Component, useContext, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Animated, Dimensions, PanResponderGestureState, PanResponder, Vibration, Image } from 'react-native';
 import GestureRecognizer from 'react-native-swipe-gestures';
-import { animateVibration } from '../Animations/Animations';
+import { returnCorrectTileAnimation } from '../Animations/TileAnimations';
 import { condenseColumns, getAllMatches, markAsMatch, sleep } from '../Lib/GridApi';
 import { TileData } from '../Lib/TileData';
 import MainContext from '../shared/context';
 import { constants } from '../Utility/constants';
-import { initializeDataSource, renderTiles, recolorMatches, findSwipeDirection, validateTileUniqueness } from '../Utility/logic';
+import { initializeDataSource, renderTiles, recolorMatches, findSwipeDirection, validateTileUniqueness, validateMatchInProgress } from '../Utility/logic';
 import { swipeDirections } from '../Utility/swipeDirections';
 import { getCurrentTileFunctionality } from '../functions/uniqueTileFunctionality'
 
@@ -20,7 +20,7 @@ const SwappableGrid = () => {
         let allMatches = getAllMatches(tileDataSource)
         animateValuesToLocations()
         setTimeout(() => {
-            processMatches(allMatches, 'BEAN_SOUND')
+            processMatches(allMatches, 'BEAN_SOUND', null)
         }, 700);
     }, [])
 
@@ -51,6 +51,7 @@ const SwappableGrid = () => {
 
 
     const swap = (i: number, j: number, dx: number, dy: number) => {
+        if (!validateMatchInProgress(tileDataSource)) return;
         const swapStarter = tileDataSource[i][j];
         if (validateTileUniqueness(swapStarter)) return;
         if (!swapStarter || swapStarter.markedAsMatch) return;
@@ -75,19 +76,21 @@ const SwappableGrid = () => {
         animateSwap.start(() => {
             let allMatches = getAllMatches(tileDataSource)
             if (allMatches.length != 0) {
-                processMatches(allMatches, 'BEAN_SOUND')
+                processMatches(allMatches, 'BEAN_SOUND', null)
             }
         })
     }
 
-    const processMatches = async (matches: any[], soundName: string) => {
-        const matchedObj = markAsMatch(matches, tileDataSource);
+
+    const processMatches = async (matches: any[], soundName: string, uniqueAnimationName: string | null) => {
         if (!matches[0]) {
-            animateValuesToLocations()
+            // animateValuesToLocations()
             return
         }
+        const matchedObj = markAsMatch(matches, tileDataSource);
+        const matchedArray: any[] = Object.values(matchedObj);
         for (let match of matches) {
-            Object.values(matchedObj).forEach((item: any, index) => animateScaleOnMatch(item, match[index]))
+            matchedArray.forEach((item: any, index) => returnCorrectTileAnimation(uniqueAnimationName, item.location, match[index], item.scale, index, match[0]))
         }
         mainContext.changeScore(true, matches[0].length, soundName)
         Vibration.vibrate(400)
@@ -104,13 +107,10 @@ const SwappableGrid = () => {
         await sleep(250)
         const nextMatches = getAllMatches(tileDataSource)
         if (nextMatches.length != 0) {
-            processMatches(nextMatches, 'BEAN_SOUND')
+            processMatches(nextMatches, 'BEAN_SOUND', null)
         }
     }
 
-    const animateScaleOnMatch = (tile: TileData, match: number[]) => {
-        animateVibration(tile.location, match, tile.scale)
-    }
 
     const uniqueTouch = (gestureState: PanResponderGestureState) => {
         let initialGestureX = gestureState.x0;
@@ -122,7 +122,7 @@ const SwappableGrid = () => {
         if (validateTileUniqueness(selectedTile)) {
             const { matches, soundName, deductTime }: any = getCurrentTileFunctionality(selectedTile.isUnique, i, j);
             deductTime && mainContext.deductTime(deductTime)
-            processMatches(matches, soundName)
+            processMatches(matches, soundName, selectedTile.isUnique)
         }
     }
 

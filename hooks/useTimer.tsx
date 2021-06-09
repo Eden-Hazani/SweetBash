@@ -12,28 +12,13 @@ export const useTimer = (currentFullTime: string, pause: boolean, isMounted: boo
             currentTimer && clearInterval(currentTimer)
             return
         }
-        currentTimer && clearInterval(currentTimer)
-        setCurrentTimer(startTimer())
-    }, [currentFullTime, pause])
-
-    const restartClock = () => {
         if (isMounted) {
             currentTimer && clearInterval(currentTimer)
             setCurrentTimer(startTimer())
         } else {
             currentTimer && clearInterval(currentTimer)
         }
-    }
-
-    useDidUpdate(restartClock, [mainContext.currentTimer])
-
-
-    useEffect(() => {
-        return (() => {
-            currentTimer && clearInterval(currentTimer)
-        })
-    }, [])
-
+    }, [mainContext.currentTimer, currentFullTime, pause])
 
 
     const startTimer = () => {
@@ -43,6 +28,7 @@ export const useTimer = (currentFullTime: string, pause: boolean, isMounted: boo
             sec--;
             if (sec < 0) sec = 0
             if (min <= 0 && sec <= 0) {
+                mainContext.deductTime('00:01')
                 currentTimer && clearInterval(currentTimer)
                 return;
             }
