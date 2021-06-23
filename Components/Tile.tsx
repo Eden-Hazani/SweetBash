@@ -7,17 +7,27 @@ import { constants } from '../Utility/constants';
 interface Props {
     location: Animated.ValueXY;
     scale: Animated.Value;
-    beanKey: number;
+    rotate: Animated.Value
     imageObj: any;
 }
 
-export function Tile({ imageObj, beanKey, location, scale }: Props) {
+export function Tile({ imageObj, location, scale, rotate }: Props) {
     return (
         <Animated.Image
             source={imageObj.image}
             style={[
                 styles.tile,
-                { transform: [{ translateX: location.x }, { translateY: location.y }, { scale: scale }] }
+                {
+                    transform: [
+                        { translateX: location.x, }, { translateY: location.y }, { scale: scale },
+                        {
+                            rotate: rotate.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: ['0deg', '360deg']
+                            })
+                        }
+                    ]
+                }
             ]} />
     )
 }

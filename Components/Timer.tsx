@@ -7,13 +7,12 @@ import MainContext from '../shared/context';
 
 interface Props {
     returnLoss: Function
-    stopTimer: boolean
 }
 
-export function Timer({ returnLoss, stopTimer }: Props) {
+export function Timer({ returnLoss }: Props) {
     const mainContext = useContext(MainContext);
     const navigation = useNavigation();
-    useTimer(mainContext.currentFullTime, stopTimer, navigation.isFocused());
+    useTimer(mainContext.currentFullTime, mainContext.timerStatus, navigation.isFocused());
 
     const currentTime = mainContext.currentTimer
     useEffect(() => {

@@ -4,5 +4,5 @@ export const currentProgress = (currentScore: number, currentGoal: number, passe
 }
 
 export const goalCalculator = (currentLevel: number, currentGoal: number) => {
-    return { updatedGoal: currentGoal + 20, updatedLevel: currentLevel + 1 }
+    return { updatedGoal: currentGoal + 10, updatedLevel: currentLevel + 1 }
 }

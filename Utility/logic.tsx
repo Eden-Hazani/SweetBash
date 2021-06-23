@@ -38,10 +38,10 @@ const renderTiles = (tileDataSource: TileData[][]) => {
       // e is a singular TileData class.
       tiles.push(
         <Tile
+          rotate={e.rotation}
           key={e.key}
           location={e.location}
           scale={e.scale}
-          beanKey={e.key}
           imageObj={e.imageObj}
         />
       );

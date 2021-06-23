@@ -6,18 +6,22 @@ import doughnutAlgorithm from "./functions/doughnutAlgorithm";
 import lollipopAlgorithm from "./functions/lollipopAlgorithm";
 
 
-export const returnCorrectTileAnimation = (animationName: string | null, location: Animated.ValueXY, match: number[], scale: Animated.Value, matchIndex: number, firstItemLocation: number[]) => {
-    console.log()
-    if (animationName === null) return animateVibration(location, match, scale);
-    else if (animationName === "SMELLY_CHEESE_TILE") return animateSmellyCheese(location, match, scale)
-    else if (animationName === "LOLLIPOP_TILE") return animateLollipop(location, match, scale, matchIndex)
-    else if (animationName === "DOUGHNUT_TILE") return animateDoughnut(location, match, scale, matchIndex, firstItemLocation)
+export const returnCorrectTileAnimation = (animationName: string | null, tileData: TileData, match: number[], matchIndex: number, firstItemLocation: number[]) => {
+    if (animationName === null) return animateVibration(tileData.location, match, tileData.scale);
+    else if (animationName === "SMELLY_CHEESE_TILE") return animateSmellyCheese(tileData.location, match, tileData.scale)
+    else if (animationName === "LOLLIPOP_TILE") return animateLollipop(tileData.location, match, tileData.scale, tileData.rotation, matchIndex)
+    else if (animationName === "DOUGHNUT_TILE") return animateDoughnut(tileData.location, match, tileData.scale, tileData.rotation, matchIndex, firstItemLocation)
 }
 
 
-const animateDoughnut = (location: Animated.ValueXY, match: number[], scale: Animated.Value, matchIndex: number, firstItemLocation: number[]) => {
+const animateDoughnut = (location: Animated.ValueXY, match: number[], scale: Animated.Value, rotation: Animated.Value, matchIndex: number, firstItemLocation: number[]) => {
     if (match[0] !== undefined) {
         Animated.parallel([
+            Animated.timing(rotation, {
+                toValue: 1,
+                duration: 250,
+                useNativeDriver: true
+            }),
             animateScaleTurbulence(scale, 500),
             Animated.sequence([
                 Animated.timing(location, {
@@ -46,9 +50,14 @@ const animateDoughnut = (location: Animated.ValueXY, match: number[], scale: Ani
     }
 }
 
-const animateLollipop = (location: Animated.ValueXY, match: number[], scale: Animated.Value, matchIndex: number) => {
+const animateLollipop = (location: Animated.ValueXY, match: number[], scale: Animated.Value, rotation: Animated.Value, matchIndex: number) => {
     if (match[0] !== undefined) {
         Animated.parallel([
+            Animated.timing(rotation, {
+                toValue: -1,
+                duration: 250,
+                useNativeDriver: true
+            }),
             animateScaleTurbulence(scale, 300),
             Animated.sequence([
                 Animated.timing(location, {

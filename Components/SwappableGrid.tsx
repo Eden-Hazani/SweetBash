@@ -9,39 +9,73 @@ import { constants } from '../Utility/constants';
 import { initializeDataSource, renderTiles, recolorMatches, findSwipeDirection, validateTileUniqueness, validateMatchInProgress } from '../Utility/logic';
 import { swipeDirections } from '../Utility/swipeDirections';
 import { getCurrentTileFunctionality } from '../functions/uniqueTileFunctionality'
+import { playLoopedSound } from '../Utility/playLoopedSound';
+import { useLevelSpecificUpdate } from '../hooks/useLevelSpecificUpdate';
 
 
 const SwappableGrid = () => {
     const [tileDataSource, setTileDataSource] = useState(initializeDataSource())
+    const [currentMatches, setCurrentMatches] = useState<number[][]>([])
+
+    useLevelSpecificUpdate(currentMatches)
+
     const gridOrigin = useRef([0, 0])
     const mainContext = useContext(MainContext)
 
     useEffect(() => {
         let allMatches = getAllMatches(tileDataSource)
-        animateValuesToLocations()
+        animateValuesToLocations(allMatches)
         setTimeout(() => {
             processMatches(allMatches, 'BEAN_SOUND', null)
         }, 700);
     }, [])
 
 
-    const animateValuesToLocations = () => {
+    const animateValuesToLocations = async (matches: any[]) => {
+        let delayIndex: number = 150;
         tileDataSource.forEach((row, i) => {
             row.forEach((e, j) => {
                 Animated.parallel([
-                    Animated.timing(e.location, {
-                        toValue: { x: constants.TILE_WIDTH * i, y: constants.TILE_WIDTH * j },
-                        duration: 150,
-                        useNativeDriver: true
-                    }),
+                    Animated.sequence([
+                        Animated.timing(e.location, {
+                            toValue: { x: constants.TILE_WIDTH * i, y: (constants.TILE_WIDTH * j) + 5 },
+                            duration: delayIndex,
+                            useNativeDriver: true
+                        }),
+                        Animated.timing(e.location, {
+                            toValue: { x: constants.TILE_WIDTH * i, y: constants.TILE_WIDTH * j },
+                            duration: delayIndex,
+                            useNativeDriver: true
+                        }),
+                    ]),
                     Animated.timing(e.scale, {
                         toValue: 1.2,
-                        duration: 150,
+                        duration: delayIndex,
+                        useNativeDriver: true
+                    }),
+                    Animated.timing(e.rotation, {
+                        toValue: 0,
+                        duration: delayIndex,
                         useNativeDriver: true
                     })
                 ]).start();
+                delayIndex = delayIndex + 28
             });
         });
+        if (matches[0] === undefined || matches[0].length === 0) return;
+        let iterations: number = matches[0].length;
+        switch (true) {
+            case matches[0].length > 5 && matches[0].length < 10:
+                iterations = 4;
+                break;
+            case matches[0].length === 10:
+                iterations = 6;
+                break;
+
+        }
+        for (let i = 0; i < iterations; i++) {
+            await playLoopedSound(matches[0], require('../assets/sounds/condensingSound.mp3'))
+        }
     }
 
     const onLayout = (event: any) => {
@@ -82,15 +116,15 @@ const SwappableGrid = () => {
     }
 
 
+
+
     const processMatches = async (matches: any[], soundName: string, uniqueAnimationName: string | null) => {
-        if (!matches[0]) {
-            // animateValuesToLocations()
-            return
-        }
+        if (!matches[0]) return
+        setCurrentMatches(matches[0])
         const matchedObj = markAsMatch(matches, tileDataSource);
         const matchedArray: any[] = Object.values(matchedObj);
         for (let match of matches) {
-            matchedArray.forEach((item: any, index) => returnCorrectTileAnimation(uniqueAnimationName, item.location, match[index], item.scale, index, match[0]))
+            matchedArray.forEach((item: any, index) => returnCorrectTileAnimation(uniqueAnimationName, item, match[index], index, match[0]))
         }
         mainContext.changeScore(true, matches[0].length, soundName)
         Vibration.vibrate(400)
@@ -103,7 +137,7 @@ const SwappableGrid = () => {
             recolorMatches(newTileDataSource)
             return newTileDataSource
         })
-        animateValuesToLocations()
+        animateValuesToLocations(matches)
         await sleep(250)
         const nextMatches = getAllMatches(tileDataSource)
         if (nextMatches.length != 0) {

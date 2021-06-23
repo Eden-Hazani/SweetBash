@@ -2,7 +2,7 @@ import React, { createContext, ReactNode, FC, useReducer } from "react";
 import { Animated } from "react-native";
 import { sleep } from "../Lib/GridApi";
 import { goalCalculator } from "../Utility/scoreLogic";
-import { animateCandyJar, minuetsToString, stringToMinuets } from "./contextFunctions";
+import { animateBackgroundShake, animateCandyJar, minuetsToString, stringToMinuets } from "./contextFunctions";
 
 
 interface MainContextValue {
@@ -19,6 +19,10 @@ interface MainContextValue {
     currentFullTime: string;
     currentTimer: string;
     deductTime: (deductibleTime: string) => void;
+    stopTimer: (status: boolean) => void;
+    timerStatus: boolean;
+    shakeBackground: () => void;
+    backgroundShakePosition: Animated.Value;
 }
 
 interface MainProviderProps {
@@ -28,6 +32,7 @@ interface MainProviderProps {
 const initialMainState: MainContextValue = {
     jarLocation: new Animated.ValueXY({ x: 0, y: 0 }),
     jarRotation: new Animated.Value(0),
+    backgroundShakePosition: new Animated.Value(0),
     triggerJar: () => { },
     currentScore: 0,
     changeScore: (val: boolean, score: number) => { },
@@ -38,13 +43,17 @@ const initialMainState: MainContextValue = {
     resetGame: () => { },
     currentFullTime: '01:00',
     deductTime: () => { },
-    currentTimer: '01:00'
+    currentTimer: '01:00',
+    shakeBackground: () => { },
+    stopTimer: () => { },
+    timerStatus: false
 };
 
 const MainContext = createContext<MainContextValue>({
     ...initialMainState,
     triggerJar: () => { },
     jarRotation: new Animated.Value(0),
+    backgroundShakePosition: new Animated.Value(0),
     jarLocation: new Animated.ValueXY({ x: 0, y: 0 }),
     currentScore: 0,
     changeScore: (val: boolean, score: number) => { },
@@ -55,7 +64,10 @@ const MainContext = createContext<MainContextValue>({
     resetGame: () => { },
     currentFullTime: '01:00',
     deductTime: () => { },
-    currentTimer: '01:00'
+    currentTimer: '01:00',
+    shakeBackground: () => { },
+    stopTimer: () => { },
+    timerStatus: false
 });
 
 
@@ -66,11 +78,22 @@ type DeductTime = {
     }
 }
 
+type StopTimer = {
+    type: 'STOP_TIMER';
+    payload: {
+        status: boolean
+    }
+}
+
 type LevelUp = {
     type: 'LEVEL_UP'
 }
 type ResetGame = {
     type: 'RESET_GAME'
+}
+
+type ShakeBackground = {
+    type: 'SHAKE_BACKGROUND'
 }
 
 type TriggerJar = {
@@ -85,7 +108,7 @@ type ChangeScore = {
     }
 };
 
-type Action = TriggerJar | ChangeScore | LevelUp | ResetGame | DeductTime
+type Action = TriggerJar | ChangeScore | LevelUp | ResetGame | DeductTime | ShakeBackground | StopTimer
 
 
 
@@ -94,13 +117,31 @@ type Action = TriggerJar | ChangeScore | LevelUp | ResetGame | DeductTime
 const reducer = (state: MainContextValue, action: Action) => {
     switch (action.type) {
 
+        case 'SHAKE_BACKGROUND': {
+            return {
+                ...state,
+            }
+        }
+
+        case 'STOP_TIMER': {
+            const timerStatus = action.payload.status
+            return {
+                ...state,
+                timerStatus
+            }
+        }
+
         case 'DEDUCT_TIME': {
             let currentTimer = '';
-            let time = stringToMinuets(minuetsToString(state.currentTimer) - minuetsToString(action.payload.time));
-            if (parseInt(time.split(':')[0]) <= 0 && parseInt(time.split(':')[1]) <= 0) {
-                currentTimer = '00:00'
+            if (minuetsToString(state.currentTimer) - minuetsToString(action.payload.time) > 0) {
+                let time = stringToMinuets(minuetsToString(state.currentTimer) - minuetsToString(action.payload.time));
+                if (parseInt(time.split(':')[0]) <= 0 && parseInt(time.split(':')[1]) <= 0) {
+                    currentTimer = '00:00'
+                } else {
+                    currentTimer = `${('0' + time.split(':')[0]).slice(-2)}:${('0' + time.split(':')[1]).slice(-2)}`;
+                }
             } else {
-                currentTimer = `${('0' + time.split(':')[0]).slice(-2)}:${('0' + time.split(':')[1]).slice(-2)}`;
+                currentTimer = '00:00'
             }
             return {
                 ...state,
@@ -119,13 +160,15 @@ const reducer = (state: MainContextValue, action: Action) => {
             const currentScore = 0
             const currentTimer = '01:00'
             const currentFullTime = '01:00'
+            const timerStatus = false
             return {
                 ...state,
                 currentLevel,
                 currentGoal,
                 currentScore,
                 currentTimer,
-                currentFullTime
+                currentFullTime,
+                timerStatus
             };
         }
 
@@ -170,6 +213,13 @@ export const MainProvider: FC<MainProviderProps> = ({ children }) => {
         dispatch({ type: 'TRIGGER_JAR' })
     }
 
+    const shakeBackground = () => {
+        animateBackgroundShake(state.backgroundShakePosition)
+        dispatch({ type: 'SHAKE_BACKGROUND' })
+    }
+
+    const stopTimer = (status: boolean) => dispatch({ type: 'STOP_TIMER', payload: { status } })
+
     const changeScore = (adding: boolean, scoreAmount: number, currentSound: string) => {
         if (adding) {
             dispatch({ type: 'CHANGE_SCORE', payload: { score: scoreAmount, currentSound } });
@@ -193,7 +243,9 @@ export const MainProvider: FC<MainProviderProps> = ({ children }) => {
                 changeScore,
                 levelUp,
                 resetGame,
-                deductTime
+                deductTime,
+                shakeBackground,
+                stopTimer
             }}
         >
             {children}

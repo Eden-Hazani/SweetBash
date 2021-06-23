@@ -1,5 +1,16 @@
 import { Animated } from "react-native";
 
+export const animateBackgroundShake = (backgroundLocation: Animated.Value) => {
+    backgroundLocation.setValue(0);
+    Animated.sequence([
+        Animated.timing(backgroundLocation, {
+            toValue: 1,
+            duration: 350,
+            useNativeDriver: true
+        }),
+    ]).start()
+}
+
 
 
 export const animateCandyJar = (jarLocation: Animated.ValueXY, jarRotation: Animated.Value) => {

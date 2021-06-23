@@ -44,10 +44,11 @@ export function ScoreChart() {
             return
         }
         const objScores = JSON.parse(scores);
-        Object.values(objScores).forEach(() => requiredImg.push(getRandomImgRequire()))
+        const rearrangedList: any = Object.values(objScores).sort((a: any, b: any) => (a.gameScore < b.gameScore) ? 1 : -1)
+        rearrangedList.forEach(() => requiredImg.push(getRandomImgRequire()))
         setRequiredImgs(requiredImg)
-        objScores[0] = { title: 'Score Board' }
-        setScoreBoard(objScores)
+        rearrangedList[0] = { title: 'Score Board' }
+        setScoreBoard(rearrangedList)
     }
 
     const panResponder = PanResponder.create({

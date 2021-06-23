@@ -7,6 +7,7 @@ export class TileData {
     public location: Animated.ValueXY;
     public imageObj: any;
     public scale: Animated.Value;
+    public rotation: Animated.Value;
     public markedAsMatch: boolean;
     public isUnique: string;
     constructor(imageObj: {
@@ -20,6 +21,7 @@ export class TileData {
         this.location = new Animated.ValueXY();
         this.imageObj = imageObj;
         this.scale = new Animated.Value(1.2);
+        this.rotation = new Animated.Value(0)
     }
 }
 

@@ -9,11 +9,9 @@ import { soundEmitter } from '../functions/soundEmitter';
 import { Timer } from './Timer';
 import { LosingScreen } from './LosingScreen';
 
-interface Props {
-    stopTimer: boolean
-}
 
-const ScoreBoard = ({ stopTimer }: Props) => {
+
+const ScoreBoard = () => {
     const mainContext = useContext(MainContext)
     const [passedLevelScore, setPassedLevelScore] = useState(0)
     const [losingScreen, setLosingScreen] = useState(false)
@@ -50,7 +48,7 @@ const ScoreBoard = ({ stopTimer }: Props) => {
                         <MainText style={{ fontSize: 15 }}>Total score: {mainContext.currentScore}</MainText>
                         <Progress.Bar color={'pink'} progress={currentProgress(mainContext.currentScore, mainContext.currentGoal, passedLevelScore)} width={200} />
                     </View>
-                    <Timer stopTimer={stopTimer} returnLoss={(val: boolean) => setLosingScreen(val)} />
+                    <Timer returnLoss={(val: boolean) => setLosingScreen(val)} />
                 </View>
             </View>
             <View>
